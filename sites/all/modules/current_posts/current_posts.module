@@ -1,0 +1,65 @@
+<?php
+/**
+ * Implements hook_help().
+ *
+ * Displays help and module information.
+ *
+ * @param path 
+ *   Which path of the site we're using to display help
+ * @param arg 
+ *   Array that holds the current path as returned from arg() function
+ */
+function current_posts_help($path, $arg) {
+  switch ($path) {
+    case "admin/help#current_posts":
+      return t("Displays 5 latest articles on homepage"); 
+      break; 
+  }
+}
+/**
+ * Implements hook_block_info().
+ */
+function current_posts_block_info() {
+  $blocks['current_posts'] = array(
+    // The name that will appear in the block list page.
+    'info' => t('Current posts'),
+	'status' => TRUE,
+    'region' => 'Content',
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'pages' => '<front>',
+    // Default setting.
+    'cache' => DRUPAL_CACHE_PER_ROLE,
+  );
+  return $blocks;
+}
+/**
+ * Implements hook_block_view().
+ * 
+ * Prepares the contents of the block.
+ */
+function current_posts_block_view($delta = '') {
+   switch ($delta) {
+    case 'current_posts':
+      $block['subject'] = t('My latest 5 articles');
+    $query = new EntityFieldQuery();
+    $entities = $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'article')
+    ->propertyOrderBy("created", "DESC")
+    ->range(0, 5)
+    ->execute();
+
+    $block['content'] = '';
+
+    foreach($entities['node'] as $obj) {
+      $node = node_load($obj->nid);
+		 $block['content'] .= "<h2>Invention " . $node->title . "</h2>";
+		 $block['content'] .= "<p>" . substr($node->body['und'][0]['value'],0, 50) . "..</p>";
+    	 $block['content'] .= "<div class=\"updated\">Updated on: " . date('d-m-Y h:i:s A', $node->changed) . "</div>";
+		 $block['content'] .=l('Read more', $node->nid, array('absolute' => TRUE));
+		 $block['content'] .= "</br>";
+    }
+     break;
+   }
+  return $block;
+}
+?>

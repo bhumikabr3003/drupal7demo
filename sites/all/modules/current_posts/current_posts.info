@@ -1,0 +1,3 @@
+name = Current Posts
+description = This modue will show block on the homepage with 5 recent article
+core = 7.x
